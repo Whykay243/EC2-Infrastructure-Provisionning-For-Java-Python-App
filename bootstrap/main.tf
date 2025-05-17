@@ -1,5 +1,3 @@
-##bootstrap/aws.xml
-
 provider "aws" {
   region = var.region
 }
@@ -9,6 +7,10 @@ resource "aws_s3_bucket" "tf_state" {
 
   tags = {
     Name = "Terraform State Bucket"
+  }
+
+  lifecycle {
+    prevent_destroy = true
   }
 }
 
