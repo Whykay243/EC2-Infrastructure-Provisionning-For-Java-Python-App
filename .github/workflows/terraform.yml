@@ -39,16 +39,15 @@ jobs:
 
       - name: Check if S3 bucket exists
         id: check_bucket
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-            if aws s3api head-bucket --bucket "realcloud-tfstate-bucket-001" 2>/dev/null; then
-              echo "exists=true" >> $GITHUB_ENV
-            else
-              echo "exists=false" >> $GITHUB_ENV
-            fi
+          if aws s3api head-bucket --bucket "${BUCKET_NAME}" 2>/dev/null; then
+            echo "exists=true" >> $GITHUB_ENV
+            echo "::set-output name=exists::true"
+          else
+            echo "exists=false" >> $GITHUB_ENV
+            echo "::set-output name=exists::false"
+          fi
+
       - name: Init & Apply Bootstrap
         if: steps.check_bucket.outputs.exists == 'false'
         working-directory: bootstrap
@@ -80,9 +79,9 @@ jobs:
       - name: Terraform Init (with backend)
         run: |
           terraform -chdir=infra init \
-            -backend-config="bucket=realcloud-tfstate-bucket-001" \
-            -backend-config="key=ec2-infra/terraform.tfstate" \
-            -backend-config="region=us-east-1"
+            -backend-config="bucket=${BUCKET_NAME}" \
+            -backend-config="key=${TF_KEY}" \
+            -backend-config="region=${AWS_REGION}"
 
       - name: Terraform Destroy
         working-directory: infra
