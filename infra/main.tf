@@ -1,5 +1,4 @@
 provider "aws" {
-  profile = "Adeola"
   region = var.region
 }
 
