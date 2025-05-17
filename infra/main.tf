@@ -1,24 +1,6 @@
-##infra/main.tf
-
 provider "aws" {
   profile = "Adeola"
   region = var.region
-}
-
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-24.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  owners = ["099720109477"] # Canonical (Ubuntu official)
 }
 
 data "aws_vpc" "default" {
@@ -81,6 +63,58 @@ resource "aws_security_group" "ec2_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    description = "DB Port 9090"
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "kube apiserver"
+    from_port   = 6443
+    to_port     = 6443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "Kube Etcd"
+    from_port   = 2379
+    to_port     = 2380
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Kubelet "
+    from_port   = 10250
+    to_port     = 10250
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "Kube Controller Manager "
+    from_port   = 10257
+    to_port     = 10257
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "Kube Controller Scheduler "
+    from_port   = 10259
+    to_port     = 10259
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "NodePort Services"
+    from_port   = 30000
+    to_port     = 32767
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
 
   # Outbound Rules - Allow all
   egress {
@@ -91,19 +125,38 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   tags = {
-    Name = "ec2-allow-web-and-ssh"
+    Name = "kubernetes-workers-nodes"
   }
 }
 
-resource "aws_instance" "ec2" {
-  ami           = data.aws_ami.ubuntu.id
+resource "aws_instance" "master" {
+  ami           = "ami-084568db4383264d4"
+  instance_type = var.instance_type_master
+  key_name      = aws_key_pair.generated_key.key_name
+  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
+
+  tags = {
+    Name = "Master-Node"
+  }
+}
+resource "aws_instance" "worker-node-1" {
+  ami           = "ami-084568db4383264d4"
   instance_type = var.instance_type
   key_name      = aws_key_pair.generated_key.key_name
   vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
 
   tags = {
-    Name = "Terraform EC2 Instance"
+    Name = "Worker-Node-1"
   }
 }
 
+resource "aws_instance" "worker-node-2" {
+  ami           = "ami-084568db4383264d4"
+  instance_type = var.instance_type
+  key_name      = aws_key_pair.generated_key.key_name
+  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
 
+  tags = {
+    Name = "Worker-Node-2"
+  }
+}

@@ -1,4 +1,4 @@
-##bootstrap/main.tf
+##bootstrap/aws.xml
 
 provider "aws" {
   profile = "Adeola"
@@ -20,4 +20,3 @@ resource "aws_s3_bucket_versioning" "tf_state_versioning" {
     status = "Enabled"
   }
 }
-

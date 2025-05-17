@@ -1,5 +1,3 @@
-##infra/variables.tf
-
 variable "region" {
   default = "us-east-1"
 }
@@ -12,3 +10,6 @@ variable "instance_type" {
   default = "t2.micro"
 }
 
+variable "instance_type_master" {
+  default = "t2.small"
+}
