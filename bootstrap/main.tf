@@ -1,7 +1,6 @@
 ##bootstrap/aws.xml
 
 provider "aws" {
-  profile = "Adeola"
   region = var.region
 }
 
