@@ -1,4 +1,4 @@
-name: Create S3 Bucket + Provision EC2 Instance
+name: Create S3 Bucket + Provision+EC2 Instance
 
 on:
   push:
