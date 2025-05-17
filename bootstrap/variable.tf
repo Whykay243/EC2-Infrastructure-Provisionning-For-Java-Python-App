@@ -3,5 +3,5 @@ variable "region" {
 }
 
 variable "bucket_name" {
-  description = "Name of the bucket for storing tfstate"
+  description = "physicstutors-tfstate-bucket-001"
 }
