@@ -11,7 +11,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  BUCKET_NAME: physicstutors-tfstate-bucket-001
+  BUCKET_NAME: redtech-tfstate-bucket-001
   TF_KEY: ec2-infra/terraform.tfstate
 
 jobs:
@@ -35,19 +35,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Check if S3 bucket exists
-        id: check_bucket
-        run: |
-          if aws s3api head-bucket --bucket "${BUCKET_NAME}" 2>/dev/null; then
-            echo "exists=true" >> $GITHUB_ENV
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_ENV
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Init & Apply Bootstrap
-        if: steps.check_bucket.outputs.exists == 'false'
         working-directory: bootstrap
         run: |
           terraform init
@@ -76,9 +64,11 @@ jobs:
 
       - name: Terraform Init (with backend)
         working-directory: infra
-        run: terraform init -backend-config="bucket=${{ env.BUCKET_NAME }}" \
-                             -backend-config="key=${{ env.TF_KEY }}" \
-                             -backend-config="region=${{ env.AWS_REGION }}"
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ env.BUCKET_NAME }}" \
+            -backend-config="key=${{ env.TF_KEY }}" \
+            -backend-config="region=${{ env.AWS_REGION }}"
 
       - name: Terraform Apply
         working-directory: infra
@@ -92,7 +82,7 @@ jobs:
           chmod 600 tf-artifacts/ec2_key.pem
 
       - name: Upload SSH Key Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ec2-private-key
           path: infra/tf-artifacts/ec2_key.pem
