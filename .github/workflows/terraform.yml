@@ -35,11 +35,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Check if S3 bucket exists
+        id: check_bucket
+        run: |
+          if aws s3api head-bucket --bucket "${BUCKET_NAME}" 2>/dev/null; then
+            echo "exists=true" >> $GITHUB_ENV
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_ENV
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Init & Apply Bootstrap
+        if: steps.check_bucket.outputs.exists == 'false'
         working-directory: bootstrap
         run: |
-          terraform init
-          terraform apply -auto-approve -input=false
+          terraform init -var="bucket_name=${BUCKET_NAME}"
+          terraform apply -auto-approve -var="bucket_name=${BUCKET_NAME}"
 
   provision:
     name: Provision EC2 + KeyPair
