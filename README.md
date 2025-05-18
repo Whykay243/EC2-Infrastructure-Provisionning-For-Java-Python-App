@@ -29,3 +29,6 @@ repo-root/
 │   └── terraform.tfvars
 ├── .github/workflows/  # GitHub Actions workflows
 └── .gitignore
+
+
+I used this infrastructure for the python-app and java-app project.... check my repo
